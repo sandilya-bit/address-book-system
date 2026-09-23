@@ -161,7 +161,7 @@ void addContact()
     contacts[contactCount] = newContact;
     contactCount++;
 
-    cout << endl << ">> Contact Added Successfully!" << endl;
+    cout << endl << ">> Contact Added Successfully" << endl;
 }
 
 /* ============================================================
@@ -198,7 +198,7 @@ void printContact(Contact c)
 /* ============================================================
    MODULE 2 : SEARCH CONTACT (User Interface)
    Search By : Name
-   Output    : Contact details  OR  "Contact Not Found"
+   Output    : Contact Details Found  OR  Contact Not Found
    ============================================================ */
 void searchContactUI()
 {
@@ -218,6 +218,7 @@ void searchContactUI()
     getline(cin, name);
     while (name.empty())
     {
+        if (cin.eof()) return;
         cout << "Name cannot be empty. Enter Name again : ";
         getline(cin, name);
     }
@@ -226,19 +227,19 @@ void searchContactUI()
 
     if (index != -1)
     {
-        cout << endl << ">> Contact Found!" << endl;
+        cout << endl << ">> Contact Details Found" << endl;
         printContact(contacts[index]);
     }
     else
     {
-        cout << endl << ">> Contact Not Found!" << endl;
+        cout << endl << ">> Contact Not Found" << endl;
     }
 }
 
 /* ============================================================
    MODULE 3 : DELETE CONTACT
    Input  : Contact Name
-   Output : "Contact Deleted Successfully" OR "Contact Not Found"
+   Output : Contact Deleted Successfully  OR  Contact Not Found
    Working: Find the contact, then shift all contacts after it
             one position to the left (array deletion technique).
    ============================================================ */
@@ -260,6 +261,7 @@ void deleteContact()
     getline(cin, name);
     while (name.empty())
     {
+        if (cin.eof()) return;
         cout << "Name cannot be empty. Enter Name again : ";
         getline(cin, name);
     }
@@ -268,7 +270,7 @@ void deleteContact()
 
     if (index == -1)
     {
-        cout << endl << ">> Contact Not Found!" << endl;
+        cout << endl << ">> Contact Not Found" << endl;
         return;
     }
 
@@ -282,7 +284,7 @@ void deleteContact()
     }
     contactCount--;                     // One contact removed
 
-    cout << ">> Contact Deleted Successfully!" << endl;
+    cout << ">> Contact Deleted Successfully" << endl;
 }
 
 /* ============================================================
@@ -311,19 +313,32 @@ void displayContacts()
 }
 
 /* ------------------------------------------------------------
-   MENU FORMAT (as per requirement)
+   MENU FORMAT (strictly matches specification)
+   =========================
+   ADDRESS BOOK SYSTEM
+   =========================
+
+   1. Add Contact
+   2. Search Contact
+   3. Delete Contact
+   4. Display Contacts
+   5. Exit
+
+   Enter Choice:
    ------------------------------------------------------------ */
 void showMenu()
 {
-    printLine('=', 40);
-    cout << "        ADDRESS BOOK SYSTEM" << endl;
-    printLine('=', 40);
+    cout << endl;
+    cout << "=========================" << endl;
+    cout << "ADDRESS BOOK SYSTEM" << endl;
+    cout << "=========================" << endl;
+    cout << endl;
     cout << "1. Add Contact" << endl;
     cout << "2. Search Contact" << endl;
     cout << "3. Delete Contact" << endl;
     cout << "4. Display Contacts" << endl;
     cout << "5. Exit" << endl;
-    printLine('=', 40);
+    cout << endl;
     cout << "Enter Choice: ";
 }
 
@@ -335,6 +350,7 @@ void showMenu()
    4. Perform Selected Operation
    5. Return To Menu
    6. Exit When User Chooses Exit
+   7. End Program
    ============================================================ */
 int main()
 {
@@ -347,9 +363,10 @@ int main()
         showMenu();             // Step 2 : Display Menu
         cin >> choice;          // Step 3 : Accept User Choice
 
-        // If the user types a non-number, treat it as an invalid choice
-        if (cin.fail())
+        // If the user types a non-number or EOF is reached
+        if (!cin)
         {
+            if (cin.eof()) break;
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             choice = 0;

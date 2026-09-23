@@ -1,0 +1,6 @@
+node_modules/
+.freebuff/
+build/
+*.zip
+test_input.txt
+test_output.txt
