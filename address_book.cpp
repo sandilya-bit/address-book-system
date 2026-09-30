@@ -1,54 +1,98 @@
 /* ============================================================
    PROJECT      : ADDRESS BOOK SYSTEM
    LANGUAGE     : C++
-   CONCEPTS     : Structures, Functions, Arrays, String Handling,
-                  Loops, Conditional Statements, Menu Driven Programming
-   DESCRIPTION  : A menu-driven program to store and manage
-                  contact information using an array of structures.
+    CONCEPTS     : Classes, Encapsulation, Abstraction, Inheritance,
+                        Polymorphism, Arrays, String Handling, Loops
+    DESCRIPTION  : A menu-driven program to store and manage
+                        contacts through an object-oriented class model.
    ============================================================ */
 
 #include <iostream>
 #include <iomanip>
 #include <string>
 #include <limits>
+#include <memory>
+#include <cctype>
+#include <utility>
 
 using namespace std;
 
-/* ------------------------------------------------------------
-   MAXIMUM CAPACITY OF THE ADDRESS BOOK (fixed size array)
-   ------------------------------------------------------------ */
+void printLine(char ch, int length);
+
 const int MAX_CONTACTS = 100;
 
-/* ------------------------------------------------------------
-   DATA STRUCTURE DESIGN
-   Each contact is stored in one structure variable.
-   The address book is an array of such structures.
-   ------------------------------------------------------------ */
-struct Contact
+class Contact
 {
-    string name;      // Contact's full name
-    string phone;     // Contact's phone number
-    string email;     // Contact's email address
-    string address;   // Contact's postal address
+private:
+    string name;
+    string phone;
+    string email;
+    string address;
+
+public:
+    Contact(const string& contactName, const string& contactPhone,
+            const string& contactEmail, const string& contactAddress)
+        : name(contactName), phone(contactPhone), email(contactEmail),
+          address(contactAddress) {}
+
+    virtual ~Contact() {}
+
+    const string& getName() const { return name; }
+    const string& getPhone() const { return phone; }
+    const string& getEmail() const { return email; }
+    const string& getAddress() const { return address; }
+
+protected:
+    void displayCommonDetails() const;
+
+public:
+    virtual void displayDetails() const = 0;
 };
 
-/* Global array of structures acting as the address book */
-Contact contacts[MAX_CONTACTS];
-int contactCount = 0;      // Number of contacts currently stored
+class PersonalContact : public Contact
+{
+public:
+    PersonalContact(const string& name, const string& phone,
+                    const string& email, const string& address)
+        : Contact(name, phone, email, address) {}
 
-/* ------------------------------------------------------------
-   FUNCTION DECLARATIONS (PROTOTYPES)
-   ------------------------------------------------------------ */
+    void displayDetails() const override;
+};
+
+class BusinessContact : public Contact
+{
+private:
+    string company;
+
+public:
+    BusinessContact(const string& name, const string& phone,
+                    const string& email, const string& address,
+                    const string& companyName)
+        : Contact(name, phone, email, address), company(companyName) {}
+
+    void displayDetails() const override;
+};
+
+class AddressBook
+{
+private:
+    unique_ptr<Contact> contacts[MAX_CONTACTS];
+    int contactCount;
+
+    int searchContact(const string& name) const;
+
+public:
+    AddressBook() : contactCount(0) {}
+    void addContact();
+    void searchContactUI() const;
+    void deleteContact();
+    void displayContacts() const;
+};
+
 void showMenu();
-void addContact();
-int  searchContact(string name);
-void searchContactUI();
-void deleteContact();
-void displayContacts();
 bool isValidPhone(string phone);
 bool isValidEmail(string email);
 string toLowerCase(string text);
-void printLine(char ch, int length);
 
 /* ------------------------------------------------------------
    UTILITY : Print a horizontal line (for neat output)
@@ -68,7 +112,7 @@ void printLine(char ch, int length)
 string toLowerCase(string text)
 {
     for (int i = 0; i < (int)text.length(); i++)
-        text[i] = tolower(text[i]);
+        text[i] = static_cast<char>(tolower(static_cast<unsigned char>(text[i])));
     return text;
 }
 
@@ -83,7 +127,7 @@ bool isValidPhone(string phone)
 
     for (int i = 0; i < (int)phone.length(); i++)
     {
-        if (!isdigit(phone[i]))
+        if (!isdigit(static_cast<unsigned char>(phone[i])))
             return false;      // Any non-digit makes it invalid
     }
     return true;
@@ -110,7 +154,7 @@ bool isValidEmail(string email)
    Input  : Name, Phone Number, Email, Address
    Output : "Contact Added Successfully"
    ============================================================ */
-void addContact()
+void AddressBook::addContact()
 {
     printLine('-', 40);
     cout << "              ADD CONTACT" << endl;
@@ -123,42 +167,64 @@ void addContact()
         return;
     }
 
-    Contact newContact;
+    string name;
+    string phone;
+    string email;
+    string address;
+    string contactType;
+    string company;
     cin.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    cout << "Contact Type (1. Personal, 2. Business) : ";
+    getline(cin, contactType);
+    while (contactType != "1" && contactType != "2")
+    {
+        cout << "Choose 1 for Personal or 2 for Business : ";
+        getline(cin, contactType);
+    }
 
     // ---- Input Name ----
     cout << "Enter Name    : ";
-    getline(cin, newContact.name);
-    while (newContact.name.empty())
+    getline(cin, name);
+    while (name.empty())
     {
         cout << "Name cannot be empty. Enter Name again : ";
-        getline(cin, newContact.name);
+        getline(cin, name);
     }
 
     // ---- Input Phone Number (validated using string handling) ----
     cout << "Enter Phone   : ";
-    getline(cin, newContact.phone);
-    while (!isValidPhone(newContact.phone))
+    getline(cin, phone);
+    while (!isValidPhone(phone))
     {
         cout << "Invalid Phone! Enter digits only (7-15 digits) : ";
-        getline(cin, newContact.phone);
+        getline(cin, phone);
     }
 
     // ---- Input Email (validated using string handling) ----
     cout << "Enter Email   : ";
-    getline(cin, newContact.email);
-    while (!isValidEmail(newContact.email))
+    getline(cin, email);
+    while (!isValidEmail(email))
     {
         cout << "Invalid Email! It must contain '@' and '.' : ";
-        getline(cin, newContact.email);
+        getline(cin, email);
     }
 
     // ---- Input Address ----
     cout << "Enter Address : ";
-    getline(cin, newContact.address);
+    getline(cin, address);
 
-    // ---- Store the structure into the array ----
-    contacts[contactCount] = newContact;
+    if (contactType == "2")
+    {
+        cout << "Enter Company : ";
+        getline(cin, company);
+        contacts[contactCount].reset(
+            new BusinessContact(name, phone, email, address, company));
+    }
+    else
+    {
+        contacts[contactCount].reset(new PersonalContact(name, phone, email, address));
+    }
     contactCount++;
 
     cout << endl << ">> Contact Added Successfully" << endl;
@@ -172,27 +238,39 @@ void addContact()
    4. If match found  -> return the index of the contact
    5. Else            -> return -1 (not found)
    ============================================================ */
-int searchContact(string name)
+int AddressBook::searchContact(const string& name) const
 {
-    for (int i = 0; i < contactCount; i++)
+    for (int index = 0; index < contactCount; index++)
     {
-        if (toLowerCase(contacts[i].name) == toLowerCase(name))
-            return i;           // Match found at index i
+        if (toLowerCase(contacts[index]->getName()) == toLowerCase(name))
+            return index;
     }
-    return -1;                  // No match found
+    return -1;
 }
 
-/* ------------------------------------------------------------
-   Display one contact in a readable format
-   ------------------------------------------------------------ */
-void printContact(Contact c)
+void PersonalContact::displayDetails() const
 {
     printLine('.', 40);
-    cout << "  Name    : " << c.name << endl;
-    cout << "  Phone   : " << c.phone << endl;
-    cout << "  Email   : " << c.email << endl;
-    cout << "  Address : " << c.address << endl;
+    cout << "  Type    : Personal" << endl;
+    displayCommonDetails();
     printLine('.', 40);
+}
+
+void BusinessContact::displayDetails() const
+{
+    printLine('.', 40);
+    cout << "  Type    : Business" << endl;
+    cout << "  Company : " << company << endl;
+    displayCommonDetails();
+    printLine('.', 40);
+}
+
+void Contact::displayCommonDetails() const
+{
+    cout << "  Name    : " << getName() << endl;
+    cout << "  Phone   : " << getPhone() << endl;
+    cout << "  Email   : " << getEmail() << endl;
+    cout << "  Address : " << getAddress() << endl;
 }
 
 /* ============================================================
@@ -200,7 +278,7 @@ void printContact(Contact c)
    Search By : Name
    Output    : Contact Details Found  OR  Contact Not Found
    ============================================================ */
-void searchContactUI()
+void AddressBook::searchContactUI() const
 {
     printLine('-', 40);
     cout << "             SEARCH CONTACT" << endl;
@@ -223,12 +301,12 @@ void searchContactUI()
         getline(cin, name);
     }
 
-    int index = searchContact(name);   // Traverse + Compare happens here
+    int index = searchContact(name);
 
     if (index != -1)
     {
         cout << endl << ">> Contact Details Found" << endl;
-        printContact(contacts[index]);
+        contacts[index]->displayDetails();
     }
     else
     {
@@ -243,7 +321,7 @@ void searchContactUI()
    Working: Find the contact, then shift all contacts after it
             one position to the left (array deletion technique).
    ============================================================ */
-void deleteContact()
+void AddressBook::deleteContact()
 {
     printLine('-', 40);
     cout << "             DELETE CONTACT" << endl;
@@ -266,7 +344,7 @@ void deleteContact()
         getline(cin, name);
     }
 
-    int index = searchContact(name);   // Reuse the searching logic
+    int index = searchContact(name);
 
     if (index == -1)
     {
@@ -275,14 +353,14 @@ void deleteContact()
     }
 
     cout << endl << "Contact to be deleted :" << endl;
-    printContact(contacts[index]);
+    contacts[index]->displayDetails();
 
-    // Shift every contact after 'index' one place to the left
-    for (int i = index; i < contactCount - 1; i++)
+    for (int current = index; current < contactCount - 1; current++)
     {
-        contacts[i] = contacts[i + 1];
+        contacts[current] = move(contacts[current + 1]);
     }
-    contactCount--;                     // One contact removed
+    contacts[contactCount - 1].reset();
+    contactCount--;
 
     cout << ">> Contact Deleted Successfully" << endl;
 }
@@ -291,7 +369,7 @@ void deleteContact()
    MODULE 4 : DISPLAY CONTACTS
    Output : List of all stored contacts in a tabular format
    ============================================================ */
-void displayContacts()
+void AddressBook::displayContacts() const
 {
     printLine('-', 40);
     cout << "            ALL CONTACTS" << endl;
@@ -305,10 +383,10 @@ void displayContacts()
 
     cout << "Total Contacts : " << contactCount << endl << endl;
 
-    for (int i = 0; i < contactCount; i++)
+    for (int index = 0; index < contactCount; index++)
     {
-        cout << "Contact #" << (i + 1) << endl;
-        printContact(contacts[i]);
+        cout << "Contact #" << (index + 1) << endl;
+        contacts[index]->displayDetails();
     }
 }
 
@@ -355,6 +433,7 @@ void showMenu()
 int main()
 {
     int choice;
+    AddressBook addressBook;
 
     cout << endl << "Welcome to the Address Book System!" << endl;
 
@@ -374,10 +453,10 @@ int main()
 
         switch (choice)         // Step 4 : Perform Selected Operation
         {
-            case 1: addContact();      break;
-            case 2: searchContactUI(); break;
-            case 3: deleteContact();   break;
-            case 4: displayContacts(); break;
+            case 1: addressBook.addContact();      break;
+            case 2: addressBook.searchContactUI(); break;
+            case 3: addressBook.deleteContact();   break;
+            case 4: addressBook.displayContacts(); break;
             case 5: cout << endl
                          << "Thank you for using Address Book System. Goodbye!"
                          << endl;

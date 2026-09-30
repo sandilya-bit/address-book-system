@@ -1,6 +1,6 @@
 # 📖 Address Book System — C++ Mini Project
 
-A menu-driven **Address Book System** in C++ using **Structures** — built as a college mini-project (first-year / second-year academic requirement).
+A menu-driven **Address Book System** in C++ using object-oriented programming — built as a college mini-project (first-year / second-year academic requirement).
 
 - 🔗 **Live GitHub Repository:** [https://github.com/sandilya-bit/address-book-system](https://github.com/sandilya-bit/address-book-system)
 - 🌐 **Live Web Prototype (GitHub Pages):** [https://sandilya-bit.github.io/address-book-system/](https://sandilya-bit.github.io/address-book-system/)
@@ -34,7 +34,7 @@ Enter Choice:
 
 | File | Description |
 |---|---|
-| `address_book.cpp` | Complete C++ source code (structures + functions + arrays + string handling) |
+| `address_book.cpp` | Complete C++ source code (classes, inheritance, polymorphism, arrays, and string handling) |
 | `address_book.exe` | Pre-built Windows executable (64-bit, built with GCC 16.2) |
 | `PROJECT_REPORT.md` | Full report: objective, problem statement, data structure design, searching logic, modules, algorithm, flowchart, sample outputs, advantages, enhancements, conclusion |
 | `VIVA_QUESTIONS.md` | 42 viva questions with answers + rapid-fire table |
@@ -58,13 +58,16 @@ g++ -std=c++17 -Wall -Wextra -o address_book address_book.cpp
 ### Online (no installation)
 Paste `address_book.cpp` into any online C++ compiler (Programiz / OnlineGDB / Compiler Explorer) and click Run. The code uses only the standard library.
 
-**Requirements:** any C++ compiler (C++98 or later works; the code deliberately avoids C++11-only features).
+**Requirements:** a C++11-or-later compiler; the provided build command uses C++17.
 
 ## Concepts Demonstrated
 
-- **Structures** — `struct Contact { name; phone; email; address; }` as the core record
-- **Arrays** — `Contact contacts[100]` holds the whole address book
-- **Functions** — one function per module, with reusable search logic
+- **Encapsulation** — contact fields and address-book storage are private to their classes
+- **Abstraction** — abstract `Contact` defines the shared contact interface
+- **Inheritance** — `PersonalContact` and `BusinessContact` derive from `Contact`
+- **Polymorphism** — virtual `displayDetails()` selects each contact type's display behavior
+- **Arrays** — a fixed-size array of `unique_ptr<Contact>` holds up to 100 contacts
+- **Functions** — class methods handle each operation, with reusable search logic
 - **String Handling** — `getline`, `tolower`, `isdigit`, length/indexing, validation loops
 - **Loops** — `do-while` menu, `for` traversals, validation re-prompt loops
 - **Conditionals** — `switch` menu dispatch, `if/else` for found/not-found and empty-book cases
